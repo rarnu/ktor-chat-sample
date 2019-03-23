@@ -1,0 +1,68 @@
+buildscript {
+    // kotlin & ktor
+    ext.ktor_version = "1.1.2"
+    ext.kotlin_version = "1.3.20"
+    // for tomcat deploy
+    ext.tomcat_plugin_version = "2.4.2"
+    ext.tomcat_version = "9.0.4"
+    // log4j
+    ext.slf4j_version = "1.7.25"
+
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://dl.bintray.com/kotlin/ktor' }
+        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.android.tools.build:gradle:3.1.4"
+
+        // for tomcat deploy
+        classpath "com.bmuschko:gradle-tomcat-plugin:$tomcat_plugin_version"
+    }
+}
+
+apply plugin: "kotlin"
+apply plugin: "war"
+// for tomcat run test
+apply plugin: 'com.bmuschko.tomcat'
+
+webAppDirName = "web"
+
+// for tomcat run test
+tomcat {
+    contextPath = "/"
+    httpProtocol = "org.apache.coyote.http11.Http11Nio2Protocol"
+    ajpProtocol  = "org.apache.coyote.ajp.AjpNio2Protocol"
+}
+
+sourceSets {
+    main.kotlin.srcDirs = ["src"]
+    main.resources.srcDirs = ["resources"]
+}
+repositories {
+    google()
+    jcenter()
+    mavenCentral()
+    maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
+}
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "io.ktor:ktor-server-servlet:$ktor_version"
+    compile "io.ktor:ktor-server-sessions:$ktor_version"
+    compile "io.ktor:ktor-websockets:$ktor_version"
+    compile "com.github.rarnu:common:0.8.0"
+    compile "org.slf4j:slf4j-jdk14:$slf4j_version"
+
+    // for tomcat run test
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:$tomcat_version",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcat_version"
+}
+
+// for tomcat run test
+task run(dependsOn: tomcatRun)
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
+}
